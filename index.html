@@ -183,20 +183,6 @@ function login(){
 }
 function logout(){ auth.signOut(); }
 
-auth.onAuthStateChanged(user => {
-  if (user && location.hash === "#admin") {
-    loginBox.classList.add("hidden");
-    adminPanel.classList.remove("hidden");
-  } else {
-    adminPanel.classList.add("hidden");
-    if (location.hash === "#admin") {
-      loginBox.classList.remove("hidden");
-    } else {
-      loginBox.classList.add("hidden");
-    }
-  }
-});
-
 /* 📌 QUOTE (AUTO DELETE AFTER 24H) */
 function saveQuote(){
   const text = quoteInput.value.trim();
@@ -214,10 +200,13 @@ function saveQuote(){
 db.ref("quote").on("value", s => {
   const q = s.val();
 
-  if (!q) {
-    quoteBox.classList.add("hidden");
-    return;
-  }
+// wait for firebase to fully load
+if (q === null) return;
+
+if (!q.text) {
+  quoteBox.classList.add("hidden");
+  return;
+}
 
   // auto delete after 24 hours
   if (Date.now() - q.time > 86400000) {
@@ -347,6 +336,7 @@ function loadCategory(cat){
 
 </body>
 </html>
+
 
 
 
