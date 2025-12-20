@@ -15,7 +15,7 @@
 .dark{
   --bg:#0f172a;
   --card:#1e293b;
-  --text:#fff;
+  --text:#ffffff;
 }
 body{
   margin:0;
@@ -26,7 +26,7 @@ body{
 header{
   display:flex;
   justify-content:space-between;
-  padding:10px;
+  padding:12px;
   font-weight:bold;
 }
 button,input,textarea,select{
@@ -48,9 +48,9 @@ button{
 }
 .hidden{display:none}
 .likeBtn{background:#ef4444}
-.delBtn{background:#dc2626}
-.editBtn{background:#059669}
+.catBtn{margin:5px}
 small{opacity:.7}
+.adminBtn{background:#64748b;margin-top:5px}
 </style>
 </head>
 
@@ -63,185 +63,222 @@ small{opacity:.7}
 
 <button onclick="toggleDark()">🌙 Dark Mode</button>
 
-<div id="quoteBox" class="post hidden"></div>
-
 <div style="padding:10px">
-  <button onclick="loadCategory('Current Affairs')">Current Affairs</button>
-  <button onclick="loadCategory('Maths')">Maths</button>
-  <button onclick="loadCategory('General Awareness')">General Awareness</button>
+  <button class="catBtn" onclick="loadCategory('Current Affairs')">Current Affairs</button>
+  <button class="catBtn" onclick="loadCategory('Maths')">Maths</button>
+  <button class="catBtn" onclick="loadCategory('General Awareness')">General Awareness</button>
 </div>
 
 <div id="contactBox" class="post hidden"></div>
 
-<!-- ADMIN LOGIN -->
+<!-- 🔐 ADMIN LOGIN (ONLY VIA #admin) -->
 <div id="loginBox" class="post hidden">
   <h3>Admin Login</h3>
-  <input type="email" id="adminEmail" placeholder="Email">
-  <input type="password" id="adminPass" placeholder="Password">
+  <input type="email" id="adminEmail" placeholder="Admin email">
+  <input type="password" id="adminPass" placeholder="Admin password">
   <button onclick="login()">Login</button>
 </div>
 
-<!-- ADMIN PANEL -->
+<!-- 👑 ADMIN PANEL -->
 <div id="adminPanel" class="post hidden">
-  <h3>New / Edit Post</h3>
-  <input id="postId" hidden>
+  <h3 id="panelTitle">New Post</h3>
+
+  <input id="postId" class="hidden">
   <input id="title" placeholder="Title">
+
   <select id="category">
     <option>Current Affairs</option>
     <option>Maths</option>
     <option>General Awareness</option>
   </select>
-  <textarea id="content" placeholder="Content"></textarea>
+
+  <textarea id="content" placeholder="Write content"></textarea>
   <input id="link" placeholder="Optional link">
+
   <button onclick="publish()">Publish / Update</button>
 
   <hr>
-  <h4>Quote (50 words, 24h)</h4>
-  <textarea id="quoteInput"></textarea>
-  <button onclick="saveQuote()">Save Quote</button>
-
-  <hr>
   <h4>Contact Link</h4>
-  <input id="contactInput">
-  <button onclick="saveContact()">Save</button>
+  <input id="contactInput" placeholder="Email / Telegram / Phone">
+  <button onclick="saveContact()">Save Contact</button>
 
   <button onclick="logout()">Logout</button>
 </div>
 
 <div id="posts"></div>
 
-<!-- Firebase -->
+<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <script>
+/* 🔥 FIREBASE CONFIG (REPLACE THESE) */
 firebase.initializeApp({
-  apiKey:"AIzaSyDO-UrwPnC7CR2NCx9B0Dp60113hic0Pmk",
-  databaseURL: "https://edu-daily-a3450-default-rtdb.asia-southeast1.firebasedatabase.app""
+  apiKey: "AIzaSyDO-UrwPnC7CR2NCx9B0Dp60113hic0Pmk",
+  authDomain: "edu-daily-a3450.firebaseapp.com",
+  databaseURL: "https://edu-daily-a3450-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "edu-daily-a3450"
 });
-const auth=firebase.auth();
-const db=firebase.database();
 
-/* Time */
-setInterval(()=>datetime.innerText=new Date().toLocaleString(),1000);
+const auth = firebase.auth();
+const db = firebase.database();
 
-/* Dark */
-function toggleDark(){document.body.classList.toggle("dark");}
+/* 🕒 DATE & TIME */
+setInterval(()=>{
+  datetime.innerText = new Date().toLocaleString();
+},1000);
 
-/* Admin link */
-if(location.hash==="#admin") loginBox.classList.remove("hidden");
+/* 🌙 DARK MODE */
+function toggleDark(){
+  document.body.classList.toggle("dark");
+}
 
-/* Auth */
+/* 🔐 SHOW LOGIN ONLY ON #admin */
+window.addEventListener("load",()=>{
+  if(window.location.hash === "#admin"){
+    loginBox.classList.remove("hidden");
+  }
+});
+
+/* 🔐 AUTH */
 function login(){
- auth.signInWithEmailAndPassword(adminEmail.value,adminPass.value)
- .catch(e=>alert(e.message));
+  auth.signInWithEmailAndPassword(
+    adminEmail.value,
+    adminPass.value
+  ).catch(e=>alert(e.message));
 }
-function logout(){auth.signOut();}
 
-auth.onAuthStateChanged(u=>{
- if(u){loginBox.classList.add("hidden");adminPanel.classList.remove("hidden");}
- else adminPanel.classList.add("hidden");
+function logout(){
+  auth.signOut();
+}
+
+auth.onAuthStateChanged(user=>{
+  if(user){
+    loginBox.classList.add("hidden");
+    adminPanel.classList.remove("hidden");
+  }else{
+    adminPanel.classList.add("hidden");
+  }
 });
 
-/* Contact */
-function saveContact(){db.ref("contact").set(contactInput.value);}
+/* 📞 CONTACT */
+function saveContact(){
+  db.ref("contact").set(contactInput.value);
+}
 db.ref("contact").on("value",s=>{
- if(s.val()){contactBox.innerHTML=`📞 <a href="${s.val()}" target="_blank">${s.val()}</a>`;contactBox.classList.remove("hidden");}
+  if(s.val()){
+    contactBox.innerHTML=`📞 <a href="${s.val()}" target="_blank">${s.val()}</a>`;
+    contactBox.classList.remove("hidden");
+  }
 });
 
-/* Quote */
-function saveQuote(){
- const text=quoteInput.value.trim();
- if(text.split(" ").length>50)return alert("Max 50 words");
- db.ref("quote").set({text,time:Date.now()});
-}
-db.ref("quote").on("value",s=>{
- if(!s.val())return;
- if(Date.now()-s.val().time>86400000){db.ref("quote").remove();return;}
- quoteBox.innerText="💡 "+s.val().text;
- quoteBox.classList.remove("hidden");
-});
-
-/* Post */
+/* 📝 ADD / EDIT POST */
 function publish(){
- const id=postId.value||Date.now();
- db.ref("posts/"+id).set({
-  title:title.value,category:category.value,
-  content:content.value,link:link.value,time:Date.now()
- });
- postId.value=title.value=content.value=link.value="";
-}
-
-/* Edit / Delete */
-function editPost(id){
- db.ref("posts/"+id).once("value",s=>{
-  const p=s.val();
-  postId.value=id;title.value=p.title;category.value=p.category;
-  content.value=p.content;link.value=p.link;
- });
-}
-function deletePost(id){
- if(confirm("Delete post?")) db.ref("posts/"+id).remove();
-}
-
-/* Likes */
-function likePost(id){
- if(localStorage.getItem("liked_"+id))return;
- db.ref("likes/"+id).transaction(v=>(v||0)+1);
- localStorage.setItem("liked_"+id,"yes");
-}
-
-/* Comments */
-function addComment(id){
- let c=Number(localStorage.getItem("commentCount")||0);
- if(c>=10)return alert("Limit reached");
- const t=document.getElementById("c_"+id).value;
- if(!t)return;
- db.ref("comments/"+id+"/"+Date.now()).set({text:t});
- localStorage.setItem("commentCount",c+1);
-}
-function deleteComment(pid,cid){
- if(confirm("Delete comment?")) db.ref("comments/"+pid+"/"+cid).remove();
-}
-
-/* Load */
-function loadCategory(cat){
- posts.innerHTML="";
- db.ref("posts").orderByChild("category").equalTo(cat).on("value",s=>{
-  posts.innerHTML="";
-  s.forEach(x=>{
-   const p=x.val(),id=x.key;
-   posts.innerHTML+=`
-   <div class="post">
-    <h3>${p.title}</h3>
-    <small>${new Date(p.time).toLocaleString()}</small>
-    <p>${p.content}</p>
-    ${p.link?`<a href="${p.link}" target="_blank">Link</a>`:""}
-    <hr>
-    <button class="likeBtn" onclick="likePost('${id}')">❤️ Like</button>
-    <span id="l_${id}">0</span>
-    <hr>
-    <input id="c_${id}">
-    <button onclick="addComment('${id}')">Comment</button>
-    <div id="com_${id}"></div>
-    ${auth.currentUser?`
-      <button class="editBtn" onclick="editPost('${id}')">Edit</button>
-      <button class="delBtn" onclick="deletePost('${id}')">Delete</button>`:""}
-   </div>`;
-   db.ref("likes/"+id).on("value",v=>document.getElementById("l_"+id).innerText=v.val()||0);
-   db.ref("comments/"+id).on("value",c=>{
-    let h="";
-    c.forEach(cc=>{
-     h+=`<p>💬 ${cc.val().text}
-     ${auth.currentUser?`<button class="delBtn" onclick="deleteComment('${id}','${cc.key}')">X</button>`:""}
-     </p>`;
-    });
-    document.getElementById("com_"+id).innerHTML=h;
-   });
+  const id = postId.value || Date.now();
+  db.ref("posts/"+id).set({
+    title:title.value,
+    category:category.value,
+    content:content.value,
+    link:link.value,
+    time:Date.now()
   });
- });
+  postId.value=title.value=content.value=link.value="";
+  panelTitle.innerText="New Post";
+}
+
+/* 🗑 DELETE POST */
+function deletePost(id){
+  if(confirm("Delete this post?")){
+    db.ref("posts/"+id).remove();
+    db.ref("comments/"+id).remove();
+    db.ref("likes/"+id).remove();
+  }
+}
+
+/* ✏ EDIT POST */
+function editPost(id){
+  db.ref("posts/"+id).once("value",s=>{
+    const p=s.val();
+    postId.value=id;
+    title.value=p.title;
+    category.value=p.category;
+    content.value=p.content;
+    link.value=p.link;
+    panelTitle.innerText="Edit Post";
+    window.scrollTo(0,0);
+  });
+}
+
+/* 👍 LIKE (1 PER DEVICE) */
+function likePost(id){
+  if(localStorage.getItem("liked_"+id)) return;
+  db.ref("likes/"+id).transaction(v=>(v||0)+1);
+  localStorage.setItem("liked_"+id,"yes");
+}
+
+/* 💬 COMMENT (MAX 10 PER DEVICE TOTAL) */
+function addComment(id){
+  let used = Number(localStorage.getItem("commentCount")||0);
+  if(used>=10){alert("Comment limit reached");return;}
+  const inp=document.getElementById("c_"+id);
+  if(!inp.value)return;
+  db.ref("comments/"+id+"/"+Date.now()).set({text:inp.value});
+  inp.value="";
+  localStorage.setItem("commentCount",used+1);
+}
+
+/* 🗑 ADMIN DELETE COMMENT */
+function deleteComment(pid,cid){
+  db.ref("comments/"+pid+"/"+cid).remove();
+}
+
+/* 📂 LOAD CATEGORY */
+function loadCategory(cat){
+  posts.innerHTML="";
+  db.ref("posts").orderByChild("category").equalTo(cat).on("value",snap=>{
+    posts.innerHTML="";
+    snap.forEach(s=>{
+      const p=s.val(),id=s.key;
+      posts.innerHTML+=`
+      <div class="post">
+        <h3>${p.title}</h3>
+        <small>${new Date(p.time).toLocaleString()}</small>
+        <p>${p.content}</p>
+        ${p.link?`<a href="${p.link}" target="_blank">Link</a>`:""}
+        <hr>
+        <button class="likeBtn" onclick="likePost('${id}')">❤️ Like</button>
+        <span id="like_${id}">0</span>
+
+        <hr>
+        <input id="c_${id}" placeholder="Write comment">
+        <button onclick="addComment('${id}')">Comment</button>
+
+        <div id="com_${id}"></div>
+
+        ${auth.currentUser?`
+          <button class="adminBtn" onclick="editPost('${id}')">Edit</button>
+          <button class="adminBtn" onclick="deletePost('${id}')">Delete</button>
+        `:""}
+      </div>`;
+
+      db.ref("likes/"+id).on("value",v=>{
+        document.getElementById("like_"+id).innerText=v.val()||0;
+      });
+
+      db.ref("comments/"+id).on("value",c=>{
+        let h="";
+        c.forEach(x=>{
+          h+=`<p>💬 ${x.val().text}
+          ${auth.currentUser?`<button onclick="deleteComment('${id}','${x.key}')">❌</button>`:""}
+          </p>`;
+        });
+        document.getElementById("com_"+id).innerHTML=h;
+      });
+    });
+  });
 }
 </script>
+
 </body>
 </html>
