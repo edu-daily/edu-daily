@@ -211,13 +211,6 @@ if (!q.text) {
   return;
 }
 
-  // auto delete after 24 hours
-  if (Date.now() - q.time > 86400000) {
-    db.ref("quote").remove();
-    quoteBox.classList.add("hidden");
-    return;
-  }
-
   quoteBox.innerHTML = `💬 <b>Daily Quote:</b><br>"${q.text}"`;
   quoteBox.classList.remove("hidden");
 });
@@ -339,6 +332,7 @@ function loadCategory(cat){
 
 </body>
 </html>
+
 
 
 
