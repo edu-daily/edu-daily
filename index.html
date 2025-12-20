@@ -114,12 +114,13 @@ small{opacity:.7}
 
 <script>
 /* 🔥 FIREBASE CONFIG (REPLACE THESE) */
-const firebaseConfig = {
+firebase.initializeApp({
   apiKey: "AIzaSyDO-UrwPnC7CR2NCx9B0Dp60113hic0Pmk",
   authDomain: "edu-daily-a3450.firebaseapp.com",
   databaseURL: "https://edu-daily-a3450-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "edu-daily-a3450",
 });
+
 const auth = firebase.auth();
 const db = firebase.database();
 
@@ -281,5 +282,3 @@ function loadCategory(cat){
 
 </body>
 </html>
-
-
