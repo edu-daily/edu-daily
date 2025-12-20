@@ -154,16 +154,24 @@ function toggleDark(){
   document.body.classList.toggle("dark");
 }
 
-/* 🔐 SHOW LOGIN ONLY ON #admin */
-window.addEventListener("load", () => {
-  // Always hide admin UI first
-  loginBox.classList.add("hidden");
+// 🔐 Admin UI control (DO NOT TOUCH quoteBox)
+function handleAdminUI(user) {
+  // Always hide admin panel first
   adminPanel.classList.add("hidden");
+  loginBox.classList.add("hidden");
 
-  // Show login ONLY if admin URL
+  // Only show login on #admin
   if (location.hash === "#admin") {
-    loginBox.classList.remove("hidden");
+    if (user) {
+      adminPanel.classList.remove("hidden");
+    } else {
+      loginBox.classList.remove("hidden");
+    }
   }
+}
+
+auth.onAuthStateChanged(user => {
+  handleAdminUI(user);
 });
 
 /* 🔐 AUTH */
@@ -339,5 +347,6 @@ function loadCategory(cat){
 
 </body>
 </html>
+
 
 
