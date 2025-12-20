@@ -155,9 +155,16 @@ function toggleDark(){
 }
 
 /* 🔐 SHOW LOGIN ONLY ON #admin */
-if(location.hash === "#admin"){
-  loginBox.classList.remove("hidden");
-}
+window.addEventListener("load", () => {
+  // Always hide admin UI first
+  loginBox.classList.add("hidden");
+  adminPanel.classList.add("hidden");
+
+  // Show login ONLY if admin URL
+  if (location.hash === "#admin") {
+    loginBox.classList.remove("hidden");
+  }
+});
 
 /* 🔐 AUTH */
 function login(){
@@ -168,9 +175,18 @@ function login(){
 }
 function logout(){ auth.signOut(); }
 
-auth.onAuthStateChanged(user=>{
-  adminPanel.classList.toggle("hidden",!user);
-  loginBox.classList.toggle("hidden",!!user);
+auth.onAuthStateChanged(user => {
+  if (user && location.hash === "#admin") {
+    loginBox.classList.add("hidden");
+    adminPanel.classList.remove("hidden");
+  } else {
+    adminPanel.classList.add("hidden");
+    if (location.hash === "#admin") {
+      loginBox.classList.remove("hidden");
+    } else {
+      loginBox.classList.add("hidden");
+    }
+  }
 });
 
 /* 📌 QUOTE (AUTO DELETE AFTER 24H) */
@@ -315,3 +331,4 @@ function loadCategory(cat){
 
 </body>
 </html>
+
