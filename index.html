@@ -200,18 +200,12 @@ function saveQuote(){
 db.ref("quote").on("value", s => {
   const q = s.val();
 
-// wait for firebase to fully load
-if (!q) {
-  quoteBox.classList.add("hidden");
-  return;
-}
+  if (!q || !q.text) {
+    quoteBox.classList.add("hidden");
+    return;
+  }
 
-if (!q.text) {
-  quoteBox.classList.add("hidden");
-  return;
-}
-
-  quoteBox.innerHTML = `💬 <b>Daily Quote:</b><br>"${q.text}"`;
+  quoteBox.innerHTML = `💬 <b>Daily Quote:</b><br>${q.text}`;
   quoteBox.classList.remove("hidden");
 });
 
@@ -332,6 +326,7 @@ function loadCategory(cat){
 
 </body>
 </html>
+
 
 
 
