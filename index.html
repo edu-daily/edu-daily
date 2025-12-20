@@ -51,6 +51,10 @@ button{
 .catBtn{margin:5px}
 small{opacity:.7}
 .adminBtn{background:#64748b;margin-top:5px}
+.quoteBox{
+  font-style:italic;
+  border-left:4px solid #2563eb;
+}
 </style>
 </head>
 
@@ -68,6 +72,9 @@ small{opacity:.7}
   <button class="catBtn" onclick="loadCategory('Maths')">Maths</button>
   <button class="catBtn" onclick="loadCategory('General Awareness')">General Awareness</button>
 </div>
+
+<!-- 📌 QUOTE (VISIBLE TO ALL) -->
+<div id="quoteBox" class="post quoteBox hidden"></div>
 
 <div id="contactBox" class="post hidden"></div>
 
@@ -98,6 +105,14 @@ small{opacity:.7}
   <button onclick="publish()">Publish / Update</button>
 
   <hr>
+
+  <!-- ✨ QUOTE ADMIN -->
+  <h4>Daily Quote (max 50 words)</h4>
+  <textarea id="quoteInput" placeholder="Write short quote (max 50 words)"></textarea>
+  <button onclick="saveQuote()">Save Quote</button>
+
+  <hr>
+
   <h4>Contact Link</h4>
   <input id="contactInput" placeholder="Email / Telegram / Phone">
   <button onclick="saveContact()">Save Contact</button>
@@ -113,8 +128,8 @@ small{opacity:.7}
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <script>
-/* 🔥 FIREBASE CONFIG (REPLACE THESE) */
-  const firebaseConfig = {
+/* 🔥 FIREBASE CONFIG */
+const firebaseConfig = {
   apiKey: "AIzaSyDO-UrwPnC7CR2NCx9B0Dp60113hic0Pmk",
   authDomain: "edu-daily-a3450.firebaseapp.com",
   databaseURL: "https://edu-daily-a3450-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -140,31 +155,47 @@ function toggleDark(){
 }
 
 /* 🔐 SHOW LOGIN ONLY ON #admin */
-window.addEventListener("load",()=>{
-  if(window.location.hash === "#admin"){
-    loginBox.classList.remove("hidden");
-  }
-});
+if(location.hash === "#admin"){
+  loginBox.classList.remove("hidden");
+}
 
 /* 🔐 AUTH */
 function login(){
   auth.signInWithEmailAndPassword(
-    adminEmail.value,
-    adminPass.value
+    adminEmail.value.trim(),
+    adminPass.value.trim()
   ).catch(e=>alert(e.message));
 }
-
-function logout(){
-  auth.signOut();
-}
+function logout(){ auth.signOut(); }
 
 auth.onAuthStateChanged(user=>{
-  if(user){
-    loginBox.classList.add("hidden");
-    adminPanel.classList.remove("hidden");
-  }else{
-    adminPanel.classList.add("hidden");
+  adminPanel.classList.toggle("hidden",!user);
+  loginBox.classList.toggle("hidden",!!user);
+});
+
+/* 📌 QUOTE (AUTO DELETE AFTER 24H) */
+function saveQuote(){
+  const text = quoteInput.value.trim();
+  if(text.split(/\s+/).length > 50){
+    alert("Maximum 50 words allowed");
+    return;
   }
+  db.ref("quote").set({
+    text,
+    time: Date.now()
+  });
+  quoteInput.value="";
+}
+
+db.ref("quote").on("value",s=>{
+  if(!s.val()) return quoteBox.classList.add("hidden");
+  const q=s.val();
+  if(Date.now() - q.time > 86400000){
+    db.ref("quote").remove();
+    return;
+  }
+  quoteBox.innerHTML = `“${q.text}”`;
+  quoteBox.classList.remove("hidden");
 });
 
 /* 📞 CONTACT */
@@ -211,7 +242,7 @@ function editPost(id){
     content.value=p.content;
     link.value=p.link;
     panelTitle.innerText="Edit Post";
-    window.scrollTo(0,0);
+    scrollTo(0,0);
   });
 }
 
@@ -222,18 +253,18 @@ function likePost(id){
   localStorage.setItem("liked_"+id,"yes");
 }
 
-/* 💬 COMMENT (MAX 10 PER DEVICE TOTAL) */
+/* 💬 COMMENT (MAX 10 PER DEVICE) */
 function addComment(id){
   let used = Number(localStorage.getItem("commentCount")||0);
   if(used>=10){alert("Comment limit reached");return;}
-  const inp=document.getElementById("c_"+id);
-  if(!inp.value)return;
-  db.ref("comments/"+id+"/"+Date.now()).set({text:inp.value});
-  inp.value="";
+  const i=document.getElementById("c_"+id);
+  if(!i.value) return;
+  db.ref("comments/"+id+"/"+Date.now()).set({text:i.value});
+  i.value="";
   localStorage.setItem("commentCount",used+1);
 }
 
-/* 🗑 ADMIN DELETE COMMENT */
+/* 🗑 DELETE COMMENT (ADMIN) */
 function deleteComment(pid,cid){
   db.ref("comments/"+pid+"/"+cid).remove();
 }
@@ -254,13 +285,10 @@ function loadCategory(cat){
         <hr>
         <button class="likeBtn" onclick="likePost('${id}')">❤️ Like</button>
         <span id="like_${id}">0</span>
-
         <hr>
         <input id="c_${id}" placeholder="Write comment">
         <button onclick="addComment('${id}')">Comment</button>
-
         <div id="com_${id}"></div>
-
         ${auth.currentUser?`
           <button class="adminBtn" onclick="editPost('${id}')">Edit</button>
           <button class="adminBtn" onclick="deletePost('${id}')">Delete</button>
@@ -287,4 +315,3 @@ function loadCategory(cat){
 
 </body>
 </html>
-
