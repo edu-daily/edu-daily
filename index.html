@@ -201,7 +201,10 @@ db.ref("quote").on("value", s => {
   const q = s.val();
 
 // wait for firebase to fully load
-if (q === null) return;
+if (!q) {
+  quoteBox.classList.add("hidden");
+  return;
+}
 
 if (!q.text) {
   quoteBox.classList.add("hidden");
@@ -336,6 +339,7 @@ function loadCategory(cat){
 
 </body>
 </html>
+
 
 
 
