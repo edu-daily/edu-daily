@@ -203,14 +203,22 @@ function saveQuote(){
   quoteInput.value="";
 }
 
-db.ref("quote").on("value",s=>{
-  if(!s.val()) return quoteBox.classList.add("hidden");
-  const q=s.val();
-  if(Date.now() - q.time > 86400000){
-    db.ref("quote").remove();
+db.ref("quote").on("value", s => {
+  const q = s.val();
+
+  if (!q) {
+    quoteBox.classList.add("hidden");
     return;
   }
-  quoteBox.innerHTML = `“${q.text}”`;
+
+  // auto delete after 24 hours
+  if (Date.now() - q.time > 86400000) {
+    db.ref("quote").remove();
+    quoteBox.classList.add("hidden");
+    return;
+  }
+
+  quoteBox.innerHTML = `💬 <b>Daily Quote:</b><br>"${q.text}"`;
   quoteBox.classList.remove("hidden");
 });
 
@@ -331,4 +339,5 @@ function loadCategory(cat){
 
 </body>
 </html>
+
 
