@@ -38,6 +38,45 @@ header{
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   }
+  /* 🔔 Sliding ticker below Edu Daily */
+.ticker {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  margin-top: 4px;
+}
+
+.ticker-text {
+  display: inline-block;
+  padding-left: 100%;
+  animation: tickerMove 15s linear infinite;
+}
+
+/* ⏸ Pause on hover (desktop) & touch (mobile) */
+.ticker-text:hover {
+  animation-play-state: paused;
+}
+
+.ticker:active .ticker-text {
+  animation-play-state: paused;
+}
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #2563eb;
+}
+
+.dark .ticker-text {
+  color: #93c5fd;
+}
+
+@keyframes tickerMove {
+  from {
+    transform: translateX(0%);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
 button,input,textarea,select{
   width:100%;
   padding:8px;
@@ -73,7 +112,27 @@ small{opacity:.7}
 <body>
 
 <header>
-  <div class="site-title">Edu Daily</div>
+  <div>
+    <div class="site-title">Edu Daily</div>
+
+    <!-- 🔔 Sliding notice (max ~30 words) -->
+    <div class="ticker">
+      <header>
+  <div>
+    <div class="site-title">Edu Daily</div>
+
+    <div class="ticker">
+      <div class="ticker-text" id="tickerText">
+        Loading updates...
+      </div>
+    </div>
+  </div>
+
+  <div id="datetime"></div>
+      </header>
+    </div>
+  </div>
+
   <div id="datetime"></div>
 </header>
 
@@ -117,6 +176,10 @@ small{opacity:.7}
   <button onclick="publish()">Publish / Update</button>
 
   <hr>
+  <hr>
+<h4>🔔 Ticker Message (max 30 words)</h4>
+<textarea id="tickerInput" placeholder="Write ticker text (max 30 words)"></textarea>
+<button onclick="saveTicker()">Save Ticker</button>
 
   <!-- ✨ QUOTE ADMIN -->
   <h4>Daily Quote (max 50 words)</h4>
@@ -269,6 +332,27 @@ function editPost(id){
   });
 }
 
+  function saveTicker() {
+  const text = tickerInput.value.trim();
+  if (!text) return;
+
+  if (text.split(" ").length > 30) {
+    alert("Max 30 words allowed");
+    return;
+  }
+
+  db.ref("ticker").set({
+    text: text,
+    time: Date.now()
+  });
+
+  tickerInput.value = "";
+  }
+  db.ref("ticker").on("value", s => {
+  if (!s.val()) return;
+  document.getElementById("tickerText").innerText = s.val().text;
+});
+  
 /* 👍 LIKE (1 PER DEVICE) */
 function likePost(id){
   const key = "liked_" + id;
@@ -355,6 +439,7 @@ function loadCategory(cat){
 
 </body>
 </html>
+
 
 
 
