@@ -310,7 +310,9 @@ function loadCategory(cat){
       <div class="post">
         <h3>${p.title}</h3>
         <small>${new Date(p.time).toLocaleString()}</small>
-        <div class="post-content">${p.content}</div>
+        <div class="post-content">
+  ${p.content.replace(/\. /g, ".\n")}
+</div>
         ${p.link?`<a href="${p.link}" target="_blank">Link</a>`:""}
         <hr>
         <button class="likeBtn" onclick="likePost('${id}')">❤️ Like</button>
@@ -345,6 +347,7 @@ function loadCategory(cat){
 
 </body>
 </html>
+
 
 
 
