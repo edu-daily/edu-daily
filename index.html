@@ -311,7 +311,7 @@ function loadCategory(cat){
         <h3>${p.title}</h3>
         <small>${new Date(p.time).toLocaleString()}</small>
         <div class="post-content">
-  ${p.content.replace(/\.\s/g, ".<br>")}
+  ${p.content.replace(/\n/g, "<br>")}
 </div>
         ${p.link?`<a href="${p.link}" target="_blank">Link</a>`:""}
         <hr>
@@ -347,6 +347,7 @@ function loadCategory(cat){
 
 </body>
 </html>
+
 
 
 
