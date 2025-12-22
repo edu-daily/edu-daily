@@ -303,10 +303,9 @@ function deleteComment(pid,cid){
 function loadCategory(cat){
   posts.innerHTML="";
   db.ref("posts").orderByChild("category").equalTo(cat).on("value",snap=>{
-    posts.innerHTML="";
     snap.forEach(s=>{
       const p=s.val(),id=s.key;
-      posts.innerHTML+=`
+      posts.innerHTML = `
       <div class="post">
         <h3>${p.title}</h3>
         <small>${new Date(p.time).toLocaleString()}</small>
@@ -325,7 +324,7 @@ function loadCategory(cat){
           <button class="adminBtn" onclick="editPost('${id}')">Edit</button>
           <button class="adminBtn" onclick="deletePost('${id}')">Delete</button>
         `:""}
-      </div>`;
+      </div>` + posts.innerHTML;
 
       db.ref("likes/"+id).on("value",v=>{
         document.getElementById("like_"+id).innerText=v.val()||0;
@@ -347,6 +346,7 @@ function loadCategory(cat){
 
 </body>
 </html>
+
 
 
 
