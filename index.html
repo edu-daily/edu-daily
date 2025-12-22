@@ -29,6 +29,15 @@ header{
   padding:12px;
   font-weight:bold;
 }
+.site-title{
+  font-size: 2.7em;
+  font-weight: 900;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, #2563eb, #9333ea);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  }
 button,input,textarea,select{
   width:100%;
   padding:8px;
@@ -64,7 +73,7 @@ small{opacity:.7}
 <body>
 
 <header>
-  <div>Edu Daily</div>
+  <div class="site-title">Edu Daily</div>
   <div id="datetime"></div>
 </header>
 
@@ -346,6 +355,7 @@ function loadCategory(cat){
 
 </body>
 </html>
+
 
 
 
