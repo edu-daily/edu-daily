@@ -55,6 +55,9 @@ small{opacity:.7}
   font-style:italic;
   border-left:4px solid #2563eb;
 }
+  .post-content{
+  white-space: pre-line;
+  }
 </style>
 </head>
 
@@ -259,20 +262,36 @@ function editPost(id){
 
 /* 👍 LIKE (1 PER DEVICE) */
 function likePost(id){
-  if(localStorage.getItem("liked_"+id)) return;
-  db.ref("likes/"+id).transaction(v=>(v||0)+1);
-  localStorage.setItem("liked_"+id,"yes");
+  const key = "liked_" + id;
+
+  if(localStorage.getItem(key)) {
+    alert("You already liked this post");
+    return;
+  }
+
+  db.ref("likes/" + id).transaction(v => (v || 0) + 1);
+  localStorage.setItem(key, "yes");
 }
 
 /* 💬 COMMENT (MAX 10 PER DEVICE) */
 function addComment(id){
-  let used = Number(localStorage.getItem("commentCount")||0);
-  if(used>=10){alert("Comment limit reached");return;}
-  const i=document.getElementById("c_"+id);
-  if(!i.value) return;
-  db.ref("comments/"+id+"/"+Date.now()).set({text:i.value});
-  i.value="";
-  localStorage.setItem("commentCount",used+1);
+  const key = "commentCount_" + id;
+  let used = Number(localStorage.getItem(key) || 0);
+
+  if (used >= 10) {
+    alert("Comment limit reached for this post");
+    return;
+  }
+
+  const i = document.getElementById("c_" + id);
+  if (!i.value.trim()) return;
+
+  db.ref("comments/" + id + "/" + Date.now()).set({
+    text: i.value.trim()
+  });
+
+  i.value = "";
+  localStorage.setItem(key, used + 1);
 }
 
 /* 🗑 DELETE COMMENT (ADMIN) */
@@ -326,6 +345,7 @@ function loadCategory(cat){
 
 </body>
 </html>
+
 
 
 
