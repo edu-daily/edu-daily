@@ -49,10 +49,13 @@ header{
 .ticker-text {
   display: inline-block;
   padding-left: 100%;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #2563eb;
   animation: tickerMove 15s linear infinite;
 }
 
-/* ⏸ Pause on hover (desktop) & touch (mobile) */
+/* ⏸ Pause on hover & touch */
 .ticker-text:hover {
   animation-play-state: paused;
 }
@@ -60,22 +63,14 @@ header{
 .ticker:active .ticker-text {
   animation-play-state: paused;
 }
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #2563eb;
-}
 
 .dark .ticker-text {
   color: #93c5fd;
 }
 
 @keyframes tickerMove {
-  from {
-    transform: translateX(0%);
-  }
-  to {
-    transform: translateX(-100%);
-  }
+  from { transform: translateX(0%); }
+  to   { transform: translateX(-100%); }
 }
 button,input,textarea,select{
   width:100%;
@@ -338,19 +333,6 @@ function editPost(id){
 
   tickerInput.value = "";
   }
-  db.ref("ticker").on("value", s => {
-  if (!s.val() || !s.val().text) return;
-
-  const el = document.getElementById("tickerText");
-
-  // update text
-  el.innerText = s.val().text;
-
-  // 🔁 FORCE animation restart (CRITICAL)
-  el.style.animation = "none";
-  el.offsetHeight; // trigger reflow
-  el.style.animation = "tickerMove 15s linear infinite";
-});
   
 /* 👍 LIKE (1 PER DEVICE) */
 function likePost(id){
@@ -434,10 +416,26 @@ function loadCategory(cat){
     });
   });
 }
+  window.addEventListener("load", () => {
+  const el = document.getElementById("tickerText");
+  if (!el) return;
+
+  db.ref("ticker").on("value", s => {
+    if (!s.val() || !s.val().text) return;
+
+    el.textContent = s.val().text;
+
+    // 🔁 Force animation restart
+    el.style.animation = "none";
+    el.offsetHeight; // reflow
+    el.style.animation = "tickerMove 15s linear infinite";
+  });
+});
 </script>
 
 </body>
 </html>
+
 
 
 
