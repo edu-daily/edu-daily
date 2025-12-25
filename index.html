@@ -339,8 +339,17 @@ function editPost(id){
   tickerInput.value = "";
   }
   db.ref("ticker").on("value", s => {
-  if (!s.val()) return;
-  document.getElementById("tickerText").innerText = s.val().text;
+  if (!s.val() || !s.val().text) return;
+
+  const el = document.getElementById("tickerText");
+
+  // update text
+  el.innerText = s.val().text;
+
+  // 🔁 FORCE animation restart (CRITICAL)
+  el.style.animation = "none";
+  el.offsetHeight; // trigger reflow
+  el.style.animation = "tickerMove 15s linear infinite";
 });
   
 /* 👍 LIKE (1 PER DEVICE) */
@@ -429,6 +438,7 @@ function loadCategory(cat){
 
 </body>
 </html>
+
 
 
 
